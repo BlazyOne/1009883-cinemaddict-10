@@ -1,7 +1,7 @@
 # Личный проект «Киноман» [![Build status][travis-image]][travis-url]
 
 * Студент: [Юрий Бадьин](https://up.htmlacademy.ru/ecmascript/10/user/1009883).
-* Наставник: `Неизвестно`.
+* Наставник: [Сергей Вохмянин](https://up.htmlacademy.ru/ecmascript/10/user/530823).
 
 ---
 
