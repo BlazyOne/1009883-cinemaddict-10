@@ -34,4 +34,4 @@ filmsExtraContainerElements.forEach((element) => {
   }
 });
 
-// render(document.body, createFilmDetailsTemplate());
+render(document.body, createFilmDetailsTemplate());
