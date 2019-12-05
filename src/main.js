@@ -100,5 +100,3 @@ const filmDetailsCloseElement = filmDetailsElement.querySelector(`.film-details_
 filmDetailsCloseElement.addEventListener(`click`, () => {
   filmDetailsElement.remove();
 });
-
-console.log(topRatedCards);
