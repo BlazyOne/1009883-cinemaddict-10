@@ -25,4 +25,22 @@ const getCategoryFilmsAmount = (cards, category) =>
 
 const castTimeFormat = (value) => value < 10 ? `0${value}` : String(value);
 
-export {getRandomBoolean, getRandomIntegerNumber, getRandomArrayItem, shuffle, getCategoryFilmsAmount, castTimeFormat};
+const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template.trim();
+
+  return newElement.firstChild;
+};
+
+const render = (container, element, place = `beforeend`) => {
+  switch (place) {
+    case `beforeend`:
+      container.append(element);
+      break;
+    case `afterbegin`:
+      container.prepend(element);
+      break;
+  }
+};
+
+export {getRandomBoolean, getRandomIntegerNumber, getRandomArrayItem, shuffle, getCategoryFilmsAmount, castTimeFormat, createElement, render};

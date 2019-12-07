@@ -1,3 +1,5 @@
+import {createElement} from "../utils";
+
 const createCardTemplate = (card) => {
   const {title, poster, rating, releaseDate, runtime, genres, description, isInWatchlist, isWatched, isFavorite, comments} = card;
   const year = releaseDate instanceof Date ? releaseDate.getFullYear() : ``;
@@ -27,4 +29,27 @@ const createCardTemplate = (card) => {
     </article>`;
 };
 
-export {createCardTemplate};
+class Card {
+  constructor(card) {
+    this._card = card;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createCardTemplate(this._card);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+export default Card;

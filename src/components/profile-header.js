@@ -1,7 +1,6 @@
-import {getCategoryFilmsAmount} from '../utils.js';
+import {createElement} from '../utils.js';
 
-const createProfileHeaderTemplate = (cards) => {
-  const watchedAmount = getCategoryFilmsAmount(cards, `isWatched`);
+const createProfileHeaderTemplate = (watchedAmount) => {
 
   let rank = ``;
   if (watchedAmount >= 1 && watchedAmount <= 10) {
@@ -19,4 +18,27 @@ const createProfileHeaderTemplate = (cards) => {
     </section>`;
 };
 
-export {createProfileHeaderTemplate};
+class ProfileHeader {
+  constructor(watchedAmount) {
+    this._watchedAmount = watchedAmount;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createProfileHeaderTemplate(this._watchedAmount);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+export default ProfileHeader;

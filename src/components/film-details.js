@@ -1,7 +1,6 @@
-import {MONTH_NAMES} from '../const';
-import {castTimeFormat} from '../utils';
+import {castTimeFormat, createElement} from '../utils';
 
-const generateGenresMarkup = (genres) =>
+const createGenresMarkup = (genres) =>
   genres
     .map((genre) =>
       `<span class="film-details__genre">${genre}</span>`
@@ -32,14 +31,14 @@ const createCommentsMarkup = (comments) =>
 const createFilmDetailsTemplate = (card) => {
   const {title, titleOriginal, poster, rating, age, director, writers, actors, releaseDate, runtime, country, genres, description, isInWatchlist, isWatched, isFavorite, comments} = card;
 
-  const releaseDateString = `${releaseDate.getDate()} ${MONTH_NAMES[releaseDate.getMonth()]} ${releaseDate.getFullYear()}`;
+  const releaseDateString = `${releaseDate.getDate()} ${new Intl.DateTimeFormat(`en-US`, {month: `long`}).format(releaseDate)} ${releaseDate.getFullYear()}`;
   const genreWord = genres.length > 1 ? `Genres` : `Genre`;
   const watchlistStatus = isInWatchlist ? `checked` : ``;
   const watchedStatus = isWatched ? `checked` : ``;
   const favoriteStatus = isFavorite ? `checked` : ``;
   const commentsAmount = comments.length;
 
-  const genresMarkup = generateGenresMarkup(genres);
+  const genresMarkup = createGenresMarkup(genres);
   const commentsMarkup = createCommentsMarkup(comments);
 
   return `\
@@ -161,4 +160,27 @@ const createFilmDetailsTemplate = (card) => {
     </section>`;
 };
 
-export {createFilmDetailsTemplate};
+class FilmDetails {
+  constructor(card) {
+    this._card = card;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createFilmDetailsTemplate(this._card);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+export default FilmDetails;

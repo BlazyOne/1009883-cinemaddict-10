@@ -1,31 +1,71 @@
-import {createProfileHeaderTemplate} from './components/profile-header.js';
-import {createMainMenuTemplate} from './components/main-menu.js';
-import {createMainSortingTemplate} from './components/main-sorting';
-import {createFilmsTemplate} from './components/films.js';
-import {createCardTemplate} from './components/card.js';
-import {createFilmDetailsTemplate} from './components/film-details.js';
-import {createShowMoreButtonTemplate} from './components/show-more-button';
+import ProfileHeaderComponent from './components/profile-header.js';
+import MainMenuComponent from './components/main-menu.js';
+import MainSortingComponent from './components/main-sorting';
+import FilmsComponent from './components/films.js';
+import CardComponent from './components/card.js';
+import FilmDetailsComponent from './components/film-details.js';
+import ShowMoreButtonComponent from './components/show-more-button';
+import NoCardsComponent from './components/no-cards';
 import {generateCards} from './mock/card.js';
-import {shuffle} from './utils.js';
+import {generateFilters} from './mock/filter.js';
+import {getWatchedAmount} from './mock/rank.js';
+import {shuffle, render} from './utils.js';
 
 const CARD_MAIN_COUNT = 22;
 const CARD_EXTRA_COUNT = 2;
 const SHOWING_CARDS_COUNT_ON_START = 5;
 const SHOWING_CARDS_COUNT_BY_BUTTON = 5;
 
-const render = (container, template, place = `beforeend`) => {
-  container.insertAdjacentHTML(place, template);
+const renderCard = (container, card) => {
+  const onEscKeyDown = (evt) => {
+    const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
+
+    if (isEscKey) {
+      removeDetails();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
+
+  const showDetails = () => {
+    if (document.querySelector(`.film-details`)) {
+      document.querySelector(`.film-details`).remove();
+    }
+    render(document.body, filmDetailsComponent.getElement());
+    document.addEventListener(`keydown`, onEscKeyDown);
+  };
+
+  const removeDetails = () => {
+    filmDetailsComponent.getElement().remove();
+  };
+
+  const cardComponent = new CardComponent(card);
+  const cardPosterElement = cardComponent.getElement().querySelector(`.film-card__poster`);
+  const cardTitleElement = cardComponent.getElement().querySelector(`.film-card__title`);
+  const cardCommentsAmountElement = cardComponent.getElement().querySelector(`.film-card__comments`);
+
+  cardPosterElement.addEventListener(`click`, showDetails);
+  cardTitleElement.addEventListener(`click`, showDetails);
+  cardCommentsAmountElement.addEventListener(`click`, showDetails);
+
+  const filmDetailsComponent = new FilmDetailsComponent(card);
+  const filmDetailsCloseElement = filmDetailsComponent.getElement().querySelector(`.film-details__close-btn`);
+
+  filmDetailsCloseElement.addEventListener(`click`, removeDetails);
+
+  render(container, cardComponent.getElement());
 };
 
 const cards = generateCards(CARD_MAIN_COUNT);
+const filters = generateFilters(cards);
+const watchedAmount = getWatchedAmount(cards);
 
 const siteHeaderElement = document.querySelector(`.header`);
-render(siteHeaderElement, createProfileHeaderTemplate(cards));
+render(siteHeaderElement, new ProfileHeaderComponent(watchedAmount).getElement());
 
 const siteMainElement = document.querySelector(`.main`);
-render(siteMainElement, createMainMenuTemplate(cards));
-render(siteMainElement, createMainSortingTemplate());
-render(siteMainElement, createFilmsTemplate());
+render(siteMainElement, new MainMenuComponent(filters).getElement());
+render(siteMainElement, new MainSortingComponent().getElement());
+render(siteMainElement, new FilmsComponent().getElement());
 
 const filmsListAllElement = siteMainElement.querySelector(`.films-list`);
 const filmsAllContainerElement = filmsListAllElement.querySelector(`.films-list__container`);
@@ -33,23 +73,29 @@ const filmsListExtraElements = siteMainElement.querySelectorAll(`.films-list--ex
 const filmsExtraContainerElements = siteMainElement.querySelectorAll(`.films-list--extra .films-list__container`);
 const filmsExtraTitleElements = siteMainElement.querySelectorAll(`.films-list--extra .films-list__title`);
 
+if (cards.length === 0) {
+  render(filmsListAllElement, new NoCardsComponent().getElement());
+}
+
 let showingCardsCount = SHOWING_CARDS_COUNT_ON_START;
-cards.slice(0, showingCardsCount).forEach((card) => render(filmsAllContainerElement, createCardTemplate(card)));
+cards.slice(0, showingCardsCount).forEach((card) => renderCard(filmsAllContainerElement, card));
 
-render(filmsListAllElement, createShowMoreButtonTemplate());
+const showMoreButtonComponent = new ShowMoreButtonComponent();
+if (cards.length > 0) {
+  render(filmsListAllElement, showMoreButtonComponent.getElement());
 
-const showMoreButtonElement = filmsListAllElement.querySelector(`.films-list__show-more`);
-showMoreButtonElement.addEventListener(`click`, () => {
-  const prevCardsCount = showingCardsCount;
-  showingCardsCount += SHOWING_CARDS_COUNT_BY_BUTTON;
+  showMoreButtonComponent.getElement().addEventListener(`click`, () => {
+    const prevCardsCount = showingCardsCount;
+    showingCardsCount += SHOWING_CARDS_COUNT_BY_BUTTON;
 
-  cards.slice(prevCardsCount, showingCardsCount)
-    .forEach((card) => render(filmsAllContainerElement, createCardTemplate(card)));
+    cards.slice(prevCardsCount, showingCardsCount)
+      .forEach((card) => renderCard(filmsAllContainerElement, card));
 
-  if (showingCardsCount >= cards.length) {
-    showMoreButtonElement.remove();
-  }
-});
+    if (showingCardsCount >= cards.length) {
+      showMoreButtonComponent.getElement().remove();
+    }
+  });
+}
 
 let tempCards = shuffle(cards);
 const topRatedCards = tempCards
@@ -77,7 +123,7 @@ const renderExtraCards = (extraCards, sectionElement, index) => {
   if (extraCards.length === 0) {
     sectionElement.remove();
   } else {
-    extraCards.forEach((card) => render(filmsExtraContainerElements[index], createCardTemplate(card)));
+    extraCards.forEach((card) => renderCard(filmsExtraContainerElements[index], card));
   }
 };
 
@@ -91,12 +137,3 @@ filmsListExtraElements.forEach((element, index) => {
 
 const footerStatisticsParagraphElement = document.querySelector(`.footer__statistics p`);
 footerStatisticsParagraphElement.textContent = `${cards.length} movies inside`;
-
-render(document.body, createFilmDetailsTemplate(cards[0]));
-
-const filmDetailsElement = document.querySelector(`.film-details`);
-const filmDetailsCloseElement = filmDetailsElement.querySelector(`.film-details__close-btn`);
-
-filmDetailsCloseElement.addEventListener(`click`, () => {
-  filmDetailsElement.remove();
-});
