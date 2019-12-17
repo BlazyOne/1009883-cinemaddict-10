@@ -1,4 +1,4 @@
-import {getCategoryFilmsAmount} from '../utils.js';
+import {getCategoryFilmsAmount} from '../utils/common.js';
 
 const getWatchedAmount = (cards) => getCategoryFilmsAmount(cards, `isWatched`);
 

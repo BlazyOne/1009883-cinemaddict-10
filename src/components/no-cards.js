@@ -1,27 +1,11 @@
-import {createElement} from '../utils.js';
+import AbstractComponent from './abstract-component.js';
 
 const createNoCardsTemplate = () =>
   `<h2 class="films-list__title">There are no movies in our database</h2>`;
 
-class NoCards {
-  constructor() {
-    this._element = null;
-  }
-
+class NoCards extends AbstractComponent {
   getTemplate() {
     return createNoCardsTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 

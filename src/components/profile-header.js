@@ -1,4 +1,4 @@
-import {createElement} from '../utils.js';
+import AbstractComponent from './abstract-component.js';
 
 const createProfileHeaderTemplate = (watchedAmount) => {
 
@@ -18,26 +18,14 @@ const createProfileHeaderTemplate = (watchedAmount) => {
     </section>`;
 };
 
-class ProfileHeader {
+class ProfileHeader extends AbstractComponent {
   constructor(watchedAmount) {
+    super();
     this._watchedAmount = watchedAmount;
-    this._element = null;
   }
 
   getTemplate() {
     return createProfileHeaderTemplate(this._watchedAmount);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 

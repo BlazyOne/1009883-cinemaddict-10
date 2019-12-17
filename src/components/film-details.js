@@ -1,4 +1,5 @@
-import {castTimeFormat, createElement} from '../utils';
+import AbstractComponent from './abstract-component.js';
+import {castTimeFormat} from '../utils/common.js';
 
 const createGenresMarkup = (genres) =>
   genres
@@ -160,26 +161,18 @@ const createFilmDetailsTemplate = (card) => {
     </section>`;
 };
 
-class FilmDetails {
+class FilmDetails extends AbstractComponent {
   constructor(card) {
+    super();
     this._card = card;
-    this._element = null;
   }
 
   getTemplate() {
     return createFilmDetailsTemplate(this._card);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setCloseButtonClickHandler(handler) {
+    this.getElement().querySelector(`.film-details__close-btn`).addEventListener(`click`, handler);
   }
 }
 

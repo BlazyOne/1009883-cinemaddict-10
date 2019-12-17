@@ -1,4 +1,4 @@
-import {getRandomBoolean, getRandomIntegerNumber, getRandomArrayItem, shuffle} from '../utils.js';
+import {getRandomBoolean, getRandomIntegerNumber, getRandomArrayItem, shuffle} from '../utils/common.js';
 
 const WRITERS_ACTORS_AMOUNT = 3;
 const MIN_YEAR = 1925;
