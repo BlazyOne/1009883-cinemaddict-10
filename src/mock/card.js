@@ -103,12 +103,14 @@ const generateComment = () => {
   };
 };
 
-const generateCard = () =>
-  ({
+const generateCard = () => {
+  const isWatched = getRandomBoolean();
+  return {
     title: getRandomArrayItem(TITLES),
     titleOriginal: getRandomArrayItem(TITLES),
     poster: getRandomArrayItem(POSTER_URLS),
     rating: getRandomIntegerNumber(0, 90) / 10,
+    userRating: isWatched && getRandomBoolean() ? getRandomIntegerNumber(1, 9) : null,
     age: getRandomIntegerNumber(6, 18),
     director: getRandomArrayItem(NAMES),
     writers: shuffle(NAMES).slice(0, WRITERS_ACTORS_AMOUNT).join(`, `),
@@ -119,10 +121,11 @@ const generateCard = () =>
     genres: shuffle(GENRES).slice(0, getRandomIntegerNumber(1, MAX_GENRES)),
     description: shuffle(DESCRIPTION_SAMPLE.split(`. `)).slice(0, getRandomIntegerNumber(1, 3)).join(`. `) + `.`,
     isInWatchlist: getRandomBoolean(),
-    isWatched: getRandomBoolean(),
+    isWatched,
     isFavorite: getRandomBoolean(),
     comments: Array.from({length: getRandomIntegerNumber(0, MAX_COMMENTS)}, generateComment)
-  });
+  };
+};
 
 const generateCards = (count) =>
   Array.from({length: count}, generateCard);
