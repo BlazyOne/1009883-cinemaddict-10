@@ -1,6 +1,6 @@
 import CardComponent from '../components/card.js';
 import FilmDetailsComponent from '../components/film-details.js';
-import {render, replace} from '../utils/render.js';
+import {render, replace, remove} from '../utils/render.js';
 
 class MovieController {
   constructor(container, onDataChange, onViewChange) {
@@ -74,6 +74,20 @@ class MovieController {
 
     this._filmDetailsComponent.setCloseButtonClickHandler(() => this._removeDetails());
 
+    this._filmDetailsComponent.setCommentDeleteClickHandler((commentId) => {
+      const commentIndex = card.comments.findIndex((it) => it.id === commentId);
+      let newData = card;
+      newData.comments[commentIndex] = null;
+      this._onDataChange(this, card, newData);
+    });
+
+    this._filmDetailsComponent.setCommentSubmitHandler((newComment) => {
+      let newData = card;
+      newData.comments.push(newComment);
+      this._filmDetailsComponent.setCurrentEmoji(null);
+      this._onDataChange(this, card, newData);
+    });
+
     if (oldCardComponent && oldFilmDetailsComponent) {
       replace(this._cardComponent, oldCardComponent);
       replace(this._filmDetailsComponent, oldFilmDetailsComponent);
@@ -86,6 +100,12 @@ class MovieController {
     if (this._isPopupShowing === true) {
       this._removeDetails();
     }
+  }
+
+  destroy() {
+    remove(this._cardComponent);
+    remove(this._filmDetailsComponent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
   _showDetails() {

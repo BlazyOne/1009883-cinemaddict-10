@@ -1,5 +1,7 @@
 import moment from 'moment';
 import AbstractSmartComponent from './abstract-smart-component.js';
+import {getRandomArrayItem} from '../utils/common.js';
+import {NAMES} from '../mock/card.js';
 
 const EMOJIS = [`smile`, `sleeping`, `puke`, `angry`];
 
@@ -50,18 +52,19 @@ const createUserRatingControlsMarkup = (isUserRatingControlsShowing, currentUser
 const createCommentsMarkup = (comments) =>
   comments
     .map((comment) => {
-      const dateString = moment(comment.date).format(`YYYY/MM/DD hh:mm`);
+      const dateString = moment(comment.date).format(`YYYY/MM/DD HH:mm`);
+      const emojiSrc = `images/emoji/${comment.emoji}.png`;
       return `\
         <li class="film-details__comment">
           <span class="film-details__comment-emoji">
-            <img src="${comment.emoji}" width="55" height="55" alt="emoji">
+            <img src="${emojiSrc}" width="55" height="55" alt="emoji">
           </span>
           <div>
             <p class="film-details__comment-text">${comment.message}</p>
             <p class="film-details__comment-info">
               <span class="film-details__comment-author">${comment.name}</span>
               <span class="film-details__comment-day">${dateString}</span>
-              <button class="film-details__comment-delete">Delete</button>
+              <button data-comment-id="${comment.id}" class="film-details__comment-delete">Delete</button>
             </p>
           </div>
         </li>`;
@@ -216,6 +219,8 @@ class FilmDetails extends AbstractSmartComponent {
     this._watchlistClickHandler = null;
     this._watchedClickHandler = null;
     this._favoriteClickHandler = null;
+    this._commentDeleteClickHandler = null;
+    this._commentSubmitHandler = null;
 
     this._subscribeOnEvents();
   }
@@ -237,11 +242,17 @@ class FilmDetails extends AbstractSmartComponent {
     return this._currentEmoji;
   }
 
+  setCurrentEmoji(emoji) {
+    this._currentEmoji = emoji;
+  }
+
   recoveryListeners() {
     this.setCloseButtonClickHandler(this._closeButtonClickHandler);
     this.setWatchlistClickHandler(this._watchlistClickHandler);
     this.setWatchedClickHandler(this._watchedClickHandler);
     this.setFavoriteClickHandler(this._favoriteClickHandler);
+    this.setCommentDeleteClickHandler(this._commentDeleteClickHandler);
+    this.setCommentSubmitHandler(this._commentSubmitHandler);
     this._subscribeOnEvents();
   }
 
@@ -267,6 +278,39 @@ class FilmDetails extends AbstractSmartComponent {
     this.getElement().querySelector(`.film-details__control-label--favorite`).addEventListener(`click`, handler);
 
     this._favoriteClickHandler = handler;
+  }
+
+  setCommentDeleteClickHandler(handler) {
+    this.getElement().querySelector(`.film-details__comments-list`).addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      if (evt.target.classList.contains(`film-details__comment-delete`)) {
+        const commentId = +evt.target.dataset.commentId;
+        handler(commentId);
+      }
+    });
+
+    this._commentDeleteClickHandler = handler;
+  }
+
+  setCommentSubmitHandler(handler) {
+    document.addEventListener(`keydown`, (evt) => {
+      const commentInputElement = this.getElement().querySelector(`.film-details__comment-input`);
+      const checkedEmoji = this.getElement().querySelector(`[name="comment-emoji"]:checked`);
+
+      if (document.activeElement === commentInputElement && evt.code === `Enter` && (evt.ctrlKey || evt.metaKey) && commentInputElement.value.length > 0 && checkedEmoji) {
+        const message = commentInputElement.value;
+        const emoji = checkedEmoji.value;
+        const name = getRandomArrayItem(NAMES);
+        const id = Math.random();
+        const date = new Date();
+
+        const newComment = {id, message, name, emoji, date};
+
+        handler(newComment);
+      }
+    });
+
+    this._commentSubmitHandler = handler;
   }
 
   _subscribeOnEvents() {

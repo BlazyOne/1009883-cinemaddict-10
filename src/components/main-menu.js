@@ -1,12 +1,12 @@
 import AbstractComponent from './abstract-component.js';
 
 const createFilterMarkup = (filter) => {
-  const {name, count} = filter;
+  const {name, count, active} = filter;
   const hrefName = name === `All movies` ? `all` : name.toLowerCase();
   const countString = name === `All movies` ? `` : ` <span class="main-navigation__item-count">${count}</span>`;
-  const activeClass = name === `All movies` ? `main-navigation__item--active` : ``;
+  const activeClass = active ? `main-navigation__item--active` : ``;
 
-  return `<a href="#${hrefName}" class="main-navigation__item ${activeClass}">${name}${countString}</a>`;
+  return `<a href="#${hrefName}" data-filter-type="${name}" class="main-navigation__item ${activeClass}">${name}${countString}</a>`;
 };
 
 const createMainMenuTemplate = (filters) => {
@@ -25,10 +25,26 @@ class MainMenu extends AbstractComponent {
   constructor(filters) {
     super();
     this._filters = filters;
+
+    this.getElement().addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      this.getElement().querySelectorAll(`a`).forEach((element) => element.classList.remove(`main-navigation__item--active`));
+      evt.target.classList.add(`main-navigation__item--active`);
+    });
   }
 
   getTemplate() {
     return createMainMenuTemplate(this._filters);
+  }
+
+  setFilterChangeHandler(handler) {
+    this.getElement().addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      const filterName = evt.target.dataset.filterType;
+      if (filterName) {
+        handler(filterName);
+      }
+    });
   }
 }
 

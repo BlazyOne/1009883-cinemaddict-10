@@ -75,10 +75,10 @@ const COMMENTS = [
 ];
 
 const COMMENT_EMOJIS = [
-  `./images/emoji/angry.png`,
-  `./images/emoji/puke.png`,
-  `./images/emoji/sleeping.png`,
-  `./images/emoji/smile.png`
+  `smile`,
+  `sleeping`,
+  `puke`,
+  `angry`
 ];
 
 const getRandomDate = (start, end) =>
@@ -96,6 +96,7 @@ const generateComment = () => {
   const minDate = new Date();
   minDate.setDate(minDate.getDate() - 7);
   return {
+    id: Math.random(),
     name: getRandomArrayItem(NAMES),
     date: getRandomDate(minDate, new Date()),
     message: getRandomArrayItem(COMMENTS),
@@ -106,6 +107,7 @@ const generateComment = () => {
 const generateCard = () => {
   const isWatched = getRandomBoolean();
   return {
+    id: Math.random(),
     title: getRandomArrayItem(TITLES),
     titleOriginal: getRandomArrayItem(TITLES),
     poster: getRandomArrayItem(POSTER_URLS),
@@ -130,4 +132,4 @@ const generateCard = () => {
 const generateCards = (count) =>
   Array.from({length: count}, generateCard);
 
-export {generateCards};
+export {generateCards, NAMES};
