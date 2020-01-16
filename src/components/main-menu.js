@@ -6,7 +6,7 @@ const createFilterMarkup = (filter) => {
   const countString = name === `All movies` ? `` : ` <span class="main-navigation__item-count">${count}</span>`;
   const activeClass = active ? `main-navigation__item--active` : ``;
 
-  return `<a href="#${hrefName}" data-filter-type="${name}" class="main-navigation__item ${activeClass}">${name}${countString}</a>`;
+  return `<a href="#${hrefName}" data-filter-type="${name}" data-menu-type="filter" class="main-navigation__item ${activeClass}">${name}${countString}</a>`;
 };
 
 const createMainMenuTemplate = (filters) => {
@@ -17,7 +17,7 @@ const createMainMenuTemplate = (filters) => {
   return `\
     <nav class="main-navigation">
       ${filtersMarkup}
-      <a href="#stats" class="main-navigation__item main-navigation__item--additional">Stats</a>
+      <a href="#stats" data-menu-type="statistics" class="main-navigation__item main-navigation__item--additional">Stats</a>
     </nav>`;
 };
 
@@ -43,6 +43,16 @@ class MainMenu extends AbstractComponent {
       const filterName = evt.target.dataset.filterType;
       if (filterName) {
         handler(filterName);
+      }
+    });
+  }
+
+  setMenuChangeHandler(handler) {
+    this.getElement().addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      const menuType = evt.target.dataset.menuType;
+      if (menuType) {
+        handler(menuType);
       }
     });
   }

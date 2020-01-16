@@ -84,14 +84,6 @@ const COMMENT_EMOJIS = [
 const getRandomDate = (start, end) =>
   new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 
-const generateRuntime = () => {
-  const hoursNumber = getRandomIntegerNumber(0, 3);
-  const minutesNumber = getRandomIntegerNumber(0, 59);
-  const hours = hoursNumber ? `${hoursNumber}h` : ``;
-  const minutes = `${minutesNumber}m`;
-  return hours + ` ` + minutes;
-};
-
 const generateComment = () => {
   const minDate = new Date();
   minDate.setDate(minDate.getDate() - 7);
@@ -106,6 +98,8 @@ const generateComment = () => {
 
 const generateCard = () => {
   const isWatched = getRandomBoolean();
+  const minWatchingDate = new Date();
+  minWatchingDate.setFullYear(minWatchingDate.getFullYear() - 1);
   return {
     id: Math.random(),
     title: getRandomArrayItem(TITLES),
@@ -118,14 +112,15 @@ const generateCard = () => {
     writers: shuffle(NAMES).slice(0, WRITERS_ACTORS_AMOUNT).join(`, `),
     actors: shuffle(NAMES).slice(0, WRITERS_ACTORS_AMOUNT).join(`, `),
     releaseDate: getRandomDate(new Date(MIN_YEAR, 0, 1), new Date(MAX_YEAR, 0, 1)),
-    runtime: generateRuntime(),
+    runtime: getRandomIntegerNumber(1, 240),
     country: getRandomArrayItem(COUNTRIES),
     genres: shuffle(GENRES).slice(0, getRandomIntegerNumber(1, MAX_GENRES)),
     description: shuffle(DESCRIPTION_SAMPLE.split(`. `)).slice(0, getRandomIntegerNumber(1, 3)).join(`. `) + `.`,
     isInWatchlist: getRandomBoolean(),
     isWatched,
     isFavorite: getRandomBoolean(),
-    comments: Array.from({length: getRandomIntegerNumber(0, MAX_COMMENTS)}, generateComment)
+    comments: Array.from({length: getRandomIntegerNumber(0, MAX_COMMENTS)}, generateComment),
+    watchingDate: isWatched ? getRandomDate(minWatchingDate, new Date()) : null
   };
 };
 

@@ -1,15 +1,8 @@
 import AbstractComponent from './abstract-component.js';
+import {getRank} from '../utils/common.js';
 
 const createProfileHeaderTemplate = (watchedAmount) => {
-
-  let rank = ``;
-  if (watchedAmount >= 1 && watchedAmount <= 10) {
-    rank = `Novice`;
-  } else if (watchedAmount >= 11 && watchedAmount <= 20) {
-    rank = `Fan`;
-  } else if (watchedAmount >= 21) {
-    rank = `Movie Buff`;
-  }
+  const rank = getRank(watchedAmount);
 
   return `\
     <section class="header__profile profile">

@@ -1,6 +1,7 @@
 import moment from 'moment';
+import he from 'he';
 import AbstractSmartComponent from './abstract-smart-component.js';
-import {getRandomArrayItem} from '../utils/common.js';
+import {getRandomArrayItem, getRuntimeText} from '../utils/common.js';
 import {NAMES} from '../mock/card.js';
 
 const EMOJIS = [`smile`, `sleeping`, `puke`, `angry`];
@@ -54,13 +55,14 @@ const createCommentsMarkup = (comments) =>
     .map((comment) => {
       const dateString = moment(comment.date).format(`YYYY/MM/DD HH:mm`);
       const emojiSrc = `images/emoji/${comment.emoji}.png`;
+      const sanitizedMessage = he.encode(comment.message);
       return `\
         <li class="film-details__comment">
           <span class="film-details__comment-emoji">
             <img src="${emojiSrc}" width="55" height="55" alt="emoji">
           </span>
           <div>
-            <p class="film-details__comment-text">${comment.message}</p>
+            <p class="film-details__comment-text">${sanitizedMessage}</p>
             <p class="film-details__comment-info">
               <span class="film-details__comment-author">${comment.name}</span>
               <span class="film-details__comment-day">${dateString}</span>
@@ -93,6 +95,8 @@ const createFilmDetailsTemplate = (card, options = {}) => {
   const favoriteStatus = isFavorite ? `checked` : ``;
   const commentsAmount = comments.length;
   const currentEmojiMarkup = currentEmoji ? `<img src="images/emoji/${currentEmoji}.png" width="55" height="55" alt="emoji">` : ``;
+
+  const runtimeText = getRuntimeText(runtime);
 
   const genresMarkup = createGenresMarkup(genres);
   const userRatingControlsMarkup = createUserRatingControlsMarkup(isUserRatingControlsShowing, currentUserRating, poster);
@@ -145,7 +149,7 @@ const createFilmDetailsTemplate = (card, options = {}) => {
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Runtime</td>
-                  <td class="film-details__cell">${runtime}</td>
+                  <td class="film-details__cell">${runtimeText}</td>
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Country</td>
@@ -293,11 +297,11 @@ class FilmDetails extends AbstractSmartComponent {
   }
 
   setCommentSubmitHandler(handler) {
-    document.addEventListener(`keydown`, (evt) => {
-      const commentInputElement = this.getElement().querySelector(`.film-details__comment-input`);
+    const commentInputElement = this.getElement().querySelector(`.film-details__comment-input`);
+    commentInputElement.addEventListener(`keydown`, (evt) => {
       const checkedEmoji = this.getElement().querySelector(`[name="comment-emoji"]:checked`);
 
-      if (document.activeElement === commentInputElement && evt.code === `Enter` && (evt.ctrlKey || evt.metaKey) && commentInputElement.value.length > 0 && checkedEmoji) {
+      if (evt.code === `Enter` && (evt.ctrlKey || evt.metaKey) && commentInputElement.value.length > 0 && checkedEmoji) {
         const message = commentInputElement.value;
         const emoji = checkedEmoji.value;
         const name = getRandomArrayItem(NAMES);

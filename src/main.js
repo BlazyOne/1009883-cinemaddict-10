@@ -1,6 +1,7 @@
 import ProfileHeaderComponent from './components/profile-header.js';
 import MainSortingComponent from './components/main-sorting';
 import FilmsComponent from './components/films.js';
+import StatisticsComponent from './components/statistics.js';
 import PageController from './controllers/page.js';
 import MainMenuController from './controllers/main-menu.js';
 import MoviesModel from './models/movies.js';
@@ -19,19 +20,23 @@ moviesModel.setMovies(cards);
 const siteHeaderElement = document.querySelector(`.header`);
 render(siteHeaderElement, new ProfileHeaderComponent(watchedAmount));
 
-const siteMainElement = document.querySelector(`.main`);
-const mainMenuController = new MainMenuController(siteMainElement, moviesModel);
-mainMenuController.render();
-
+const statisticsComponent = new StatisticsComponent(moviesModel);
 const mainSortingComponent = new MainSortingComponent();
-render(siteMainElement, mainSortingComponent);
-
 const filmsComponent = new FilmsComponent();
-render(siteMainElement, filmsComponent);
-
 const pageController = new PageController(filmsComponent, mainSortingComponent, moviesModel);
 
+const siteMainElement = document.querySelector(`.main`);
+const mainMenuController = new MainMenuController(siteMainElement, moviesModel, statisticsComponent, pageController);
+mainMenuController.render();
+
+render(siteMainElement, mainSortingComponent);
+
+render(siteMainElement, filmsComponent);
+
 pageController.render();
+
+render(siteMainElement, statisticsComponent);
+statisticsComponent.hide();
 
 const footerStatisticsParagraphElement = document.querySelector(`.footer__statistics p`);
 footerStatisticsParagraphElement.textContent = `${cards.length} movies inside`;

@@ -25,4 +25,25 @@ const getCategoryFilmsAmount = (cards, category) =>
 
 const castTimeFormat = (value) => value < 10 ? `0${value}` : String(value);
 
-export {getRandomBoolean, getRandomIntegerNumber, getRandomArrayItem, shuffle, getCategoryFilmsAmount, castTimeFormat};
+const getRank = (watchedAmount) => {
+  let rank = ``;
+  if (watchedAmount >= 1 && watchedAmount <= 10) {
+    rank = `Novice`;
+  } else if (watchedAmount >= 11 && watchedAmount <= 20) {
+    rank = `Fan`;
+  } else if (watchedAmount >= 21) {
+    rank = `Movie Buff`;
+  }
+
+  return rank;
+};
+
+const getRuntimeText = (runtime) => {
+  const runtimeHours = Math.floor(runtime / 60);
+  const runtimeMinutes = runtime % 60;
+  const runtimeText = runtimeHours ? `${runtimeHours}h ${runtimeMinutes}m` : `${runtimeMinutes}m`;
+
+  return runtimeText;
+};
+
+export {getRandomBoolean, getRandomIntegerNumber, getRandomArrayItem, shuffle, getCategoryFilmsAmount, castTimeFormat, getRank, getRuntimeText};
