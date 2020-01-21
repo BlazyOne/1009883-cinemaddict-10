@@ -27,7 +27,7 @@ class Movies {
     this._callHandlers(this._filterChangeHandlers);
   }
 
-  updateMovies(id, movie) {
+  updateMovie(id, movie) {
     const index = this._movies.findIndex((it) => it.id === id);
 
     if (index === -1) {

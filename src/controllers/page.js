@@ -3,6 +3,7 @@ import ShowMoreButtonComponent from '../components/show-more-button';
 import NoCardsComponent from '../components/no-cards';
 import {shuffle} from '../utils/common.js';
 import {render, remove} from '../utils/render.js';
+import {getCategoryFilmsAmount} from '../utils/common.js';
 
 const MOVIE_EXTRA_COUNT = 2;
 const SHOWING_MOVIES_COUNT_ON_START = 5;
@@ -17,9 +18,10 @@ const renderMovies = (container, movies, onDataChange, onViewChange) =>
   });
 
 class PageController {
-  constructor(container, sortingComponent, moviesModel) {
+  constructor(container, sortingComponent, moviesModel, profileHeaderComponent, api) {
     this._container = container;
     this._moviesModel = moviesModel;
+    this._api = api;
 
     this._showedMovieControllers = [];
     this._showedExtraMovieControllers = [];
@@ -27,6 +29,7 @@ class PageController {
     this._sortingComponent = sortingComponent;
     this._noCardsComponent = new NoCardsComponent();
     this._showMoreButtonComponent = new ShowMoreButtonComponent();
+    this._profileHeaderComponent = profileHeaderComponent;
 
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
@@ -155,13 +158,20 @@ class PageController {
   }
 
   _onDataChange(movieController, oldData, newData) {
-    const isSuccess = this._moviesModel.updateMovies(oldData.id, newData);
+    this._api.updateMovie(oldData.id, newData)
+      .then((movieModel) => {
+        const isSuccess = this._moviesModel.updateMovie(oldData.id, movieModel);
 
-    if (isSuccess) {
-      this._moviesModel.deleteComment(newData.id);
+        if (isSuccess) {
+          this._moviesModel.deleteComment(movieModel.id);
 
-      movieController.render(newData);
-    }
+          movieController.render(newData);
+
+          const movies = this._moviesModel.getMoviesAll();
+          const watchedMoviesAmount = getCategoryFilmsAmount(movies, `isWatched`);
+          this._profileHeaderComponent.rerender(watchedMoviesAmount);
+        }
+      });
   }
 
   _onViewChange() {

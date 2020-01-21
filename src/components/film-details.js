@@ -84,7 +84,7 @@ const createEmojisRadioMarkup = (currentEmoji) =>
 
 
 const createFilmDetailsTemplate = (card, options = {}) => {
-  const {title, titleOriginal, poster, rating, age, director, writers, actors, releaseDate, runtime, country, genres, description, isInWatchlist, isWatched, isFavorite, comments} = card;
+  const {title, titleOriginal, poster, rating, age, director, writers, actors, releaseDate, runtime, country, genres, description, isInWatchlist, isWatched, isFavorite, comments, commentIds} = card;
   const {isUserRatingControlsShowing, isUserRatingShowing, currentUserRating, currentEmoji} = options;
 
   const userRatingMarkup = isUserRatingShowing ? `<p class="film-details__user-rating">Your rate ${currentUserRating}</p>` : ``;
@@ -93,7 +93,7 @@ const createFilmDetailsTemplate = (card, options = {}) => {
   const watchlistStatus = isInWatchlist ? `checked` : ``;
   const watchedStatus = isWatched ? `checked` : ``;
   const favoriteStatus = isFavorite ? `checked` : ``;
-  const commentsAmount = comments.length;
+  const commentsAmount = commentIds.length;
   const currentEmojiMarkup = currentEmoji ? `<img src="images/emoji/${currentEmoji}.png" width="55" height="55" alt="emoji">` : ``;
 
   const runtimeText = getRuntimeText(runtime);

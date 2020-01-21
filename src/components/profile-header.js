@@ -1,4 +1,4 @@
-import AbstractComponent from './abstract-component.js';
+import AbstractSmartComponent from './abstract-smart-component.js';
 import {getRank} from '../utils/common.js';
 
 const createProfileHeaderTemplate = (watchedAmount) => {
@@ -11,7 +11,7 @@ const createProfileHeaderTemplate = (watchedAmount) => {
     </section>`;
 };
 
-class ProfileHeader extends AbstractComponent {
+class ProfileHeader extends AbstractSmartComponent {
   constructor(watchedAmount) {
     super();
     this._watchedAmount = watchedAmount;
@@ -19,6 +19,14 @@ class ProfileHeader extends AbstractComponent {
 
   getTemplate() {
     return createProfileHeaderTemplate(this._watchedAmount);
+  }
+
+  recoveryListeners() {}
+
+  rerender(watchedAmount) {
+    this._watchedAmount = watchedAmount;
+
+    super.rerender();
   }
 }
 

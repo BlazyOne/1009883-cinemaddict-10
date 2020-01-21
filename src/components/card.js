@@ -2,13 +2,13 @@ import AbstractComponent from './abstract-component.js';
 import {getRuntimeText} from '../utils/common.js';
 
 const createCardTemplate = (card) => {
-  const {title, poster, rating, releaseDate, runtime, genres, description, isInWatchlist, isWatched, isFavorite, comments} = card;
+  const {title, poster, rating, releaseDate, runtime, genres, description, isInWatchlist, isWatched, isFavorite, commentIds} = card;
   const year = releaseDate instanceof Date ? releaseDate.getFullYear() : ``;
   const genre = genres[0];
   const watchlistClass = isInWatchlist ? `film-card__controls-item--active` : ``;
   const watchedClass = isWatched ? `film-card__controls-item--active` : ``;
   const favoriteClass = isFavorite ? `film-card__controls-item--active` : ``;
-  const commentsAmount = comments.length;
+  const commentsAmount = commentIds.length;
 
   const runtimeText = getRuntimeText(runtime);
 

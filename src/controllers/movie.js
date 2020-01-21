@@ -1,5 +1,6 @@
 import CardComponent from '../components/card.js';
 import FilmDetailsComponent from '../components/film-details.js';
+import MovieModel from '../models/movie.js';
 import {render, replace, remove} from '../utils/render.js';
 
 class MovieController {
@@ -16,12 +17,12 @@ class MovieController {
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
   }
 
-  render(card) {
+  render(movie) {
     const oldCardComponent = this._cardComponent;
     const oldFilmDetailsComponent = this._filmDetailsComponent;
 
-    this._cardComponent = new CardComponent(card);
-    this._filmDetailsComponent = new FilmDetailsComponent(card, oldFilmDetailsComponent ? oldFilmDetailsComponent.getCurrentEmoji() : null);
+    this._cardComponent = new CardComponent(movie);
+    this._filmDetailsComponent = new FilmDetailsComponent(movie, oldFilmDetailsComponent ? oldFilmDetailsComponent.getCurrentEmoji() : null);
 
     this._cardComponent.setPosterClickHandler(() => this._showDetails());
     this._cardComponent.setTitleClickHandler(() => this._showDetails());
@@ -29,63 +30,66 @@ class MovieController {
 
     this._cardComponent.setWatchlistClickHandler((evt) => {
       evt.preventDefault();
-      this._onDataChange(this, card, Object.assign({}, card, {
-        isInWatchlist: !card.isInWatchlist,
-        userRating: this._filmDetailsComponent.getCurrentUserRating()
-      }));
+
+      const newMovie = movie.cloneMovie();
+      newMovie.isInWatchlist = !newMovie.isInWatchlist;
+
+      this._onDataChange(this, movie, newMovie);
     });
 
     this._cardComponent.setWatchedClickHandler((evt) => {
       evt.preventDefault();
-      this._onDataChange(this, card, Object.assign({}, card, {
-        isWatched: !card.isWatched,
-        userRating: null
-      }));
+
+      const newMovie = movie.cloneMovie();
+      newMovie.isWatched = !newMovie.isWatched;
+
+      this._onDataChange(this, movie, newMovie);
     });
 
     this._cardComponent.setFavoriteClickHandler((evt) => {
       evt.preventDefault();
-      this._onDataChange(this, card, Object.assign({}, card, {
-        isFavorite: !card.isFavorite,
-        userRating: this._filmDetailsComponent.getCurrentUserRating()
-      }));
+
+      const newMovie = movie.cloneMovie();
+      newMovie.isFavorite = !newMovie.isFavorite;
+
+      this._onDataChange(this, movie, newMovie);
     });
 
-    this._filmDetailsComponent.setWatchlistClickHandler(() =>
-      this._onDataChange(this, card, Object.assign({}, card, {
-        isInWatchlist: !card.isInWatchlist,
-        userRating: this._filmDetailsComponent.getCurrentUserRating()
-      }))
-    );
+    this._filmDetailsComponent.setWatchlistClickHandler(() => {
+      const newMovie = movie.cloneMovie();
+      newMovie.isInWatchlist = !newMovie.isInWatchlist;
 
-    this._filmDetailsComponent.setWatchedClickHandler(() =>
-      this._onDataChange(this, card, Object.assign({}, card, {
-        isWatched: !card.isWatched,
-        userRating: null
-      }))
-    );
+      this._onDataChange(this, movie, newMovie);
+    });
 
-    this._filmDetailsComponent.setFavoriteClickHandler(() =>
-      this._onDataChange(this, card, Object.assign({}, card, {
-        isFavorite: !card.isFavorite,
-        userRating: this._filmDetailsComponent.getCurrentUserRating()
-      }))
-    );
+    this._filmDetailsComponent.setWatchedClickHandler(() => {
+      const newMovie = movie.cloneMovie();
+      newMovie.isWatched = !newMovie.isWatched;
+
+      this._onDataChange(this, movie, newMovie);
+    });
+
+    this._filmDetailsComponent.setFavoriteClickHandler(() => {
+      const newMovie = movie.cloneMovie();
+      newMovie.isFavorite = !newMovie.isFavorite;
+
+      this._onDataChange(this, movie, newMovie);
+    });
 
     this._filmDetailsComponent.setCloseButtonClickHandler(() => this._removeDetails());
 
     this._filmDetailsComponent.setCommentDeleteClickHandler((commentId) => {
-      const commentIndex = card.comments.findIndex((it) => it.id === commentId);
-      let newData = card;
+      const commentIndex = movie.comments.findIndex((it) => it.id === commentId);
+      let newData = movie;
       newData.comments[commentIndex] = null;
-      this._onDataChange(this, card, newData);
+      this._onDataChange(this, movie, newData);
     });
 
     this._filmDetailsComponent.setCommentSubmitHandler((newComment) => {
-      let newData = card;
+      let newData = movie;
       newData.comments.push(newComment);
       this._filmDetailsComponent.setCurrentEmoji(null);
-      this._onDataChange(this, card, newData);
+      this._onDataChange(this, movie, newData);
     });
 
     if (oldCardComponent && oldFilmDetailsComponent) {
