@@ -1,8 +1,7 @@
 import moment from 'moment';
 import he from 'he';
 import AbstractSmartComponent from './abstract-smart-component.js';
-import {getRandomArrayItem, getRuntimeText} from '../utils/common.js';
-import {NAMES} from '../mock/card.js';
+import {getRuntimeText} from '../utils/common.js';
 
 const EMOJIS = [`smile`, `sleeping`, `puke`, `angry`];
 
@@ -85,7 +84,7 @@ const createEmojisRadioMarkup = (currentEmoji) =>
 
 const createFilmDetailsTemplate = (card, options = {}) => {
   const {title, titleOriginal, poster, rating, age, director, writers, actors, releaseDate, runtime, country, genres, description, isInWatchlist, isWatched, isFavorite, comments, commentIds} = card;
-  const {isUserRatingControlsShowing, isUserRatingShowing, currentUserRating, currentEmoji} = options;
+  const {isUserRatingControlsShowing, isUserRatingShowing, currentUserRating, currentEmoji, commentMessage} = options;
 
   const userRatingMarkup = isUserRatingShowing ? `<p class="film-details__user-rating">Your rate ${currentUserRating}</p>` : ``;
   const releaseDateString = moment(releaseDate).format(`DD MMMM YYYY`);
@@ -196,7 +195,7 @@ const createFilmDetailsTemplate = (card, options = {}) => {
               </div>
 
               <label class="film-details__comment-label">
-                <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>
+                <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${commentMessage}</textarea>
               </label>
 
               <div class="film-details__emoji-list">
@@ -215,9 +214,10 @@ class FilmDetails extends AbstractSmartComponent {
 
     this._card = card;
     this._isUserRatingControlsShowing = card.isWatched;
-    this._isUserRatingShowing = !!card.userRating;
+    this._isUserRatingShowing = !!(card.userRating && card.isWatched);
     this._currentUserRating = card.userRating;
     this._currentEmoji = currentEmoji;
+    this._currentCommentMessage = ``;
 
     this._closeButtonClickHandler = null;
     this._watchlistClickHandler = null;
@@ -225,6 +225,7 @@ class FilmDetails extends AbstractSmartComponent {
     this._favoriteClickHandler = null;
     this._commentDeleteClickHandler = null;
     this._commentSubmitHandler = null;
+    this._userRatingChangeHandler = null;
 
     this._subscribeOnEvents();
   }
@@ -234,7 +235,8 @@ class FilmDetails extends AbstractSmartComponent {
       isUserRatingControlsShowing: this._isUserRatingControlsShowing,
       isUserRatingShowing: this._isUserRatingShowing,
       currentUserRating: this._currentUserRating,
-      currentEmoji: this._currentEmoji
+      currentEmoji: this._currentEmoji,
+      commentMessage: this._currentCommentMessage
     });
   }
 
@@ -257,6 +259,7 @@ class FilmDetails extends AbstractSmartComponent {
     this.setFavoriteClickHandler(this._favoriteClickHandler);
     this.setCommentDeleteClickHandler(this._commentDeleteClickHandler);
     this.setCommentSubmitHandler(this._commentSubmitHandler);
+    this.setUserRatingChangeHandler(this._userRatingChangeHandler);
     this._subscribeOnEvents();
   }
 
@@ -288,8 +291,9 @@ class FilmDetails extends AbstractSmartComponent {
     this.getElement().querySelector(`.film-details__comments-list`).addEventListener(`click`, (evt) => {
       evt.preventDefault();
       if (evt.target.classList.contains(`film-details__comment-delete`)) {
-        const commentId = +evt.target.dataset.commentId;
-        handler(commentId);
+        const commentId = evt.target.dataset.commentId;
+        const deleteButtonElement = evt.target;
+        handler(commentId, deleteButtonElement);
       }
     });
 
@@ -298,17 +302,18 @@ class FilmDetails extends AbstractSmartComponent {
 
   setCommentSubmitHandler(handler) {
     const commentInputElement = this.getElement().querySelector(`.film-details__comment-input`);
+
     commentInputElement.addEventListener(`keydown`, (evt) => {
       const checkedEmoji = this.getElement().querySelector(`[name="comment-emoji"]:checked`);
 
       if (evt.code === `Enter` && (evt.ctrlKey || evt.metaKey) && commentInputElement.value.length > 0 && checkedEmoji) {
         const message = commentInputElement.value;
         const emoji = checkedEmoji.value;
-        const name = getRandomArrayItem(NAMES);
-        const id = Math.random();
         const date = new Date();
 
-        const newComment = {id, message, name, emoji, date};
+        const newComment = {message, emoji, date};
+
+        commentInputElement.disabled = true;
 
         handler(newComment);
       }
@@ -317,7 +322,7 @@ class FilmDetails extends AbstractSmartComponent {
     this._commentSubmitHandler = handler;
   }
 
-  _subscribeOnEvents() {
+  setUserRatingChangeHandler(handler) {
     const element = this.getElement();
 
     const userRatingRadioContolsElement = element.querySelector(`.film-details__user-rating-score`);
@@ -327,26 +332,27 @@ class FilmDetails extends AbstractSmartComponent {
         const checkedUserRatingRadioValueNumber = +element.querySelector(`input[name="score"]:checked`).value;
 
         if (this._currentUserRating !== checkedUserRatingRadioValueNumber) {
-          this._currentUserRating = checkedUserRatingRadioValueNumber;
-          this._isUserRatingShowing = true;
-
-          this.rerender();
+          handler(checkedUserRatingRadioValueNumber);
         }
       });
 
       element.querySelector(`.film-details__watched-reset`).addEventListener(`click`, () => {
-        this._currentUserRating = null;
-        this._isUserRatingShowing = false;
-
-        this.rerender();
+        handler(0);
       });
     }
+
+    this._userRatingChangeHandler = handler;
+  }
+
+  _subscribeOnEvents() {
+    const element = this.getElement();
 
     element.querySelector(`.film-details__emoji-list`).addEventListener(`change`, () => {
       const checkedEmojiRadioValue = element.querySelector(`input[name="comment-emoji"]:checked`).value;
 
       if (this._currentEmoji !== checkedEmojiRadioValue) {
         this._currentEmoji = checkedEmojiRadioValue;
+        this._currentCommentMessage = this.getElement().querySelector(`.film-details__comment-input`).value;
 
         this.rerender();
       }

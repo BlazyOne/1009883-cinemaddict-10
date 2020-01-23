@@ -22,6 +22,8 @@ class Movie {
 
     this.comments = [];
     this.commentIds = data[`comments`];
+
+    this._commentsLoaded = false;
   }
 
   movieToServerNotation() {
@@ -38,7 +40,7 @@ class Movie {
         'writers': this.writers,
         'actors': this.actors,
         'release': {
-          'date': this.releaseDate.getTime(),
+          'date': this.releaseDate.toISOString(),
           'release_country': this.country,
         },
         'runtime': this.runtime,
@@ -81,14 +83,14 @@ class Movie {
   }
 
   static parseComments(commentsData) {
-    return commentsData.map(Movie.parseComment());
+    return commentsData.map(Movie.parseComment);
   }
 
   static toLocalComment(comment) {
     return {
       'comment': comment[`message`],
       'date': comment[`date`].toISOString(),
-      'emotion': comment[`emotion`]
+      'emotion': comment[`emoji`]
     };
   }
 }

@@ -47,7 +47,7 @@ class API {
       .then((response) => response.json())
       .then((response) => {
         const movie = MovieModel.parseMovie(response.movie);
-        movie.setComments(MovieModel.parseComments(response.comments));
+        movie.comments = MovieModel.parseComments(response.comments);
         return movie;
       });
   }

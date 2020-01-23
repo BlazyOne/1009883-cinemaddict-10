@@ -44,12 +44,15 @@ class Movies {
   deleteComment(movieId) {
     const movieIndex = this._movies.findIndex((it) => it.id === movieId);
     const commentIndex = this._movies[movieIndex].comments.findIndex((it) => it === null);
+    const commentIdsIndex = this._movies[movieIndex].commentIds.findIndex((it) => it === null);
 
     if (movieIndex === -1 || commentIndex === -1) {
       return false;
     }
 
     this._movies[movieIndex].comments = [].concat(this._movies[movieIndex].comments.slice(0, commentIndex), this._movies[movieIndex].comments.slice(commentIndex + 1));
+
+    this._movies[movieIndex].commentIds = [].concat(this._movies[movieIndex].commentIds.slice(0, commentIdsIndex), this._movies[movieIndex].commentIds.slice(commentIdsIndex + 1));
 
     this._callHandlers(this._dataChangeHandlers);
 

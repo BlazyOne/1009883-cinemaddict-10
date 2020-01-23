@@ -9,9 +9,9 @@ const MOVIE_EXTRA_COUNT = 2;
 const SHOWING_MOVIES_COUNT_ON_START = 5;
 const SHOWING_MOVIES_COUNT_BY_BUTTON = 5;
 
-const renderMovies = (container, movies, onDataChange, onViewChange) =>
+const renderMovies = (container, movies, onDataChange, onViewChange, api) =>
   movies.map((movie) => {
-    const movieController = new MovieController(container, onDataChange, onViewChange);
+    const movieController = new MovieController(container, onDataChange, onViewChange, api);
     movieController.render(movie);
 
     return movieController;
@@ -70,12 +70,15 @@ class PageController {
     const filmsListAllElement = this._container.getElement().querySelector(`.films-list`);
     const filmsAllContainerElement = filmsListAllElement.querySelector(`.films-list__container`);
 
-    const newMovies = renderMovies(filmsAllContainerElement, movies, this._onDataChange, this._onViewChange);
+    const newMovies = renderMovies(filmsAllContainerElement, movies, this._onDataChange, this._onViewChange, this._api);
     this._showedMovieControllers = this._showedMovieControllers.concat(newMovies);
     this._showingMoviesCount = this._showedMovieControllers.length;
   }
 
   _renderExtraMovies() {
+    this._showedExtraMovieControllers.forEach((movieController) => movieController.destroy());
+    this._showedExtraMovieControllers = [];
+
     const filmsListExtraElements = this._container.getElement().querySelectorAll(`.films-list--extra`);
     const filmsExtraContainerElements = this._container.getElement().querySelectorAll(`.films-list--extra .films-list__container`);
     const filmsExtraTitleElements = this._container.getElement().querySelectorAll(`.films-list--extra .films-list__title`);
@@ -94,10 +97,10 @@ class PageController {
 
     tempMovies = shuffle(movies);
     const mostCommentedMovies = tempMovies
-      .filter((movie) => movie.comments.length > 0)
+      .filter((movie) => movie.commentIds.length > 0)
       .sort((a, b) => {
-        if (a.comments.length !== b.comments.length) {
-          return b.comments.length - a.comments.length;
+        if (a.commentIds.length !== b.commentIds.length) {
+          return b.commentIds.length - a.commentIds.length;
         }
         return tempMovies.indexOf(a) - tempMovies.indexOf(b);
       })
@@ -107,7 +110,7 @@ class PageController {
       if (extraMovies.length === 0) {
         sectionElement.remove();
       } else {
-        const newMovies = renderMovies(filmsExtraContainerElements[index], extraMovies, this._onDataChange, this._onViewChange);
+        const newMovies = renderMovies(filmsExtraContainerElements[index], extraMovies, this._onDataChange, this._onViewChange, this._api);
         this._showedExtraMovieControllers = this._showedExtraMovieControllers.concat(newMovies);
       }
     };
@@ -157,21 +160,58 @@ class PageController {
     this._renderShowMoreButton(sortedMovies);
   }
 
-  _onDataChange(movieController, oldData, newData) {
-    this._api.updateMovie(oldData.id, newData)
-      .then((movieModel) => {
-        const isSuccess = this._moviesModel.updateMovie(oldData.id, movieModel);
-
-        if (isSuccess) {
-          this._moviesModel.deleteComment(movieModel.id);
-
-          movieController.render(newData);
-
-          const movies = this._moviesModel.getMoviesAll();
-          const watchedMoviesAmount = getCategoryFilmsAmount(movies, `isWatched`);
-          this._profileHeaderComponent.rerender(watchedMoviesAmount);
+  _onDataChange(movieController, oldData, newData, mode = `moviePut`, commentData = null, deleteButtonElement = null) {
+    switch (mode) {
+      case `moviePut`:
+        if (newData.userRating !== oldData.userRating) {
+          movieController.blockUserRatingControls();
         }
-      });
+
+        this._api.updateMovie(oldData.id, newData)
+          .then((movieModel) => {
+            const isSuccess = this._moviesModel.updateMovie(oldData.id, movieModel);
+
+            if (isSuccess) {
+              movieController.render(newData);
+              this._renderExtraMovies();
+
+              const movies = this._moviesModel.getMoviesAll();
+              const watchedMoviesAmount = getCategoryFilmsAmount(movies, `isWatched`);
+              this._profileHeaderComponent.rerender(watchedMoviesAmount);
+            }
+          })
+          .catch(() => movieController.unblockUserRatingControls());
+        break;
+      case `commentDelete`:
+        deleteButtonElement.textContent = `Deleting…`;
+        this._api.deleteComment(commentData.id)
+          .then(() => {
+            const isSuccess = this._moviesModel.updateMovie(oldData.id, newData);
+
+            if (isSuccess) {
+              this._moviesModel.deleteComment(oldData.id);
+
+              movieController.render(newData);
+              this._renderExtraMovies();
+            }
+          })
+          .catch(() => {
+            deleteButtonElement.textContent = `Delete`;
+          });
+        break;
+      case `commentAdd`:
+        this._api.createComment(oldData.id, commentData)
+          .then((movieModel) => {
+            const isSuccess = this._moviesModel.updateMovie(oldData.id, movieModel);
+
+            if (isSuccess) {
+              movieController.render(movieModel);
+              this._renderExtraMovies();
+            }
+          })
+          .catch(() => movieController.shakeCommentInput());
+        break;
+    }
   }
 
   _onViewChange() {
