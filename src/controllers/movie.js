@@ -170,11 +170,23 @@ class MovieController {
   }
 
   unblockUserRatingControls() {
-    const userRatingControlElements = this._filmDetailsComponent.getElement().querySelector(`input[name="score"], .film-details__watched-reset`);
+    const userRatingControlElements = this._filmDetailsComponent.getElement().querySelectorAll(`input[name="score"], .film-details__watched-reset`);
 
     userRatingControlElements.forEach((element) => {
       element.disabled = false;
     });
+  }
+
+  resetUserRating() {
+    const filmDetailsElement = this._filmDetailsComponent.getElement();
+    const userRatingControlElements = filmDetailsElement.querySelectorAll(`input[name="score"]`);
+    const currentRating = this._filmDetailsComponent.getCurrentUserRating();
+    const currentRatingControlElement = filmDetailsElement.querySelector(`input[name="score"][value="${currentRating}"]`);
+
+    userRatingControlElements.forEach((element) => {
+      element.checked = false;
+    });
+    currentRatingControlElement.checked = true;
   }
 
   _onEscKeyDown(evt) {

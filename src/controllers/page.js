@@ -180,7 +180,12 @@ class PageController {
               this._profileHeaderComponent.rerender(watchedMoviesAmount);
             }
           })
-          .catch(() => movieController.unblockUserRatingControls());
+          .catch(() => {
+            if (newData.userRating !== oldData.userRating) {
+              movieController.unblockUserRatingControls();
+              movieController.resetUserRating();
+            }
+          });
         break;
       case `commentDelete`:
         deleteButtonElement.textContent = `Deleting…`;
